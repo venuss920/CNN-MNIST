@@ -1,0 +1,67 @@
+
+#CNN's with keras and python/ MNIST
+
+import numpy as np
+import matplotlib.pyplot as plt
+from keras.datasets import mnist
+from keras.utils.np_utils import to_categorical
+from keras.models import Sequential
+from keras.layers import Dense,Conv2D,MaxPool2D,Flatten
+(x_train,y_train) , (x_test, y_test) = mnist.load_data() #tuple unpacking
+x_train.shape                                 #no color channel (reshape the data using colour channel)
+y_train.shape
+
+single = x_train[0]
+single
+plt.imshow(single, cmap = 'gray') 
+plt.imshow(single, cmap = 'gray_r')            # 0's dark and 1 's white pixel in grayscale mode, inverse of grayscale
+
+y_train                                        #convert the labelling to one hot encoding/ change to the distinct categories of 0 and 1
+y_cat_test = to_categorical(y_test,10)         # 10 because 0 to 9 we have digits so 10 categories/ categorical datas.
+y_cat_train = to_categorical(y_train,10)
+y_cat_test
+                                                
+x_train = x_train/255                          #processing X DATAS by normalization or lots of different ways, here values will be between 0 and 1 after the normalisation.
+x_test = x_test/255
+
+x_train
+
+
+# RESHAPING THE TRAIN AND TEST SETS TO ADD COLOUR CHANNEL OF 1 AT THE END BECAUSE OF THE GRAYSCALE.
+x_train = x_train.reshape(60000,28,28,1)
+x_train
+
+x_test = x_test.reshape(10000,28,28,1)
+
+
+model = Sequential()
+#Convolutional Layer
+model.add(Conv2D(filters =32, kernel_size = (4,4), input_shape = (28,28,1),activation = 'relu'))
+#Pooling Layer.
+model.add(MaxPool2D(pool_size =(2,2)))
+#2D to 1D
+model.add(Flatten())
+
+model.add(Dense(200, activation = 'relu'))
+
+
+model.add(Dense(10, activation = 'softmax'))  #softmax for multiclass classification
+
+
+model.compile(loss = 'categorical_crossentropy', optimizer = 'rmsprop',metrics = ['accuracy'])
+
+model.summary()
+
+model.fit(x_train,y_cat_train,epochs = 2)
+
+
+model.evaluate(x_test,y_cat_test)   #overfitting, if performs good on training and not good on test it is overfitting, and underfitting is the vice versa.
+                                    #the accuracy of mostly both of train and test set is simillar so it may be here not a problem
+                                    
+from sklearn.metrics import classification_report
+y_cat_test_arg= np.argmax(y_cat_test,axis=1)
+predictions = np.argmax(model.predict(x_test), axis =1) #conversion of one hot encoding to values. np.argmax returns the indices of the index no. axis = 1 direction along columns
+print(classification_report(y_cat_test_arg,predictions))
+y_cat_test_arg
+predictions
+
